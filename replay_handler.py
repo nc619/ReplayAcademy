@@ -190,7 +190,7 @@ im_red_fountain = {'x': 687, 'z': 54}
 # top_position['cameraPosition'] = {}
 # for key in blue_fountain:
     # top_position['cameraPosition'][key] = (red_fountain[key]-blue_fountain[key])/2-blue_fountain
-replay_id = "6987682670"
+replay_id = "7081944263"
 RU.openReplay(replay_id, port, authorization_header)
 # sleep(3)
 # is_replay_loading()

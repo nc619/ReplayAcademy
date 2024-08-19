@@ -57,7 +57,7 @@ def allLaneStats(time, zoom_factor = 3000, res = '1920'):
     lane_stats = {key: {} for key in ['top', 'mid', 'bot']}
     for key in final_centroids:
         side, lane = key.split('_')
-        lane_stats[key] = getLaneStat(lane, time, res, 'multi', zoom_factor, final_centroids)
+        lane_stats[lane] = getLaneStat(lane, time, res, 'multi', zoom_factor, final_centroids)
     return lane_stats
     
 def getLaneStat(lane, time, res = '1920', mode = 'single', zoom_factor = 3000, final_centroids = None):
@@ -77,13 +77,18 @@ def getLaneStat(lane, time, res = '1920', mode = 'single', zoom_factor = 3000, f
         raise("Error in the inputs")
     lane_stat = {}
     lane_stat['fight_location'] = getFightLocation(final_centroids[f'blue_{lane}'], final_centroids[f'red_{lane}'], 'spec', res)
+    lane_stat['blue'], lane_stat['red'] = {}, {}
     for side in ['red', 'blue']:
         zoomIn(final_centroids[f'{side}_{lane}'], zoom_factor, position = f'{side}_{lane}',c_type = 'spec', res = res)
         im = np.array(IP.getScreenshot(None))
         results = IP.getBars(im, HP_col[f'{side}{res}'], res)
-        lane_stat[f'{side}_hpbars'] = results[0]
-        lane_stat[f'{side}_nminion'] = results[1]
-        lane_stat[f'{side}_hptot'] =  results[0].sum()/100
+        lane_stat[side]['hpbars'] = results[0]
+        lane_stat[side]['nminion'] = results[1]
+        lane_stat[side]['hptot'] = results[0].sum()/100
+        lane_stat[side]['location'] = final_centroids[f'{side}_{lane}']
+        # lane_stat[f'{side}_hpbars'] = results[0]
+        # lane_stat[f'{side}_nminion'] = results[1]
+        # lane_stat[f'{side}_hptot'] =  results[0].sum()/100
     return lane_stat
 
 def getFightLocation(blue_centroid, red_centroid, c_type = 'spec', res = '1920', threshold = 3000):
@@ -137,7 +142,7 @@ def getMostForward(coords, side = 'red', c_type = 'spec', res = '1920'):
         if full_coords['top'].shape[0] == 1 or full_coords['top'][top_idx[-1],0] < 1.2*full_coords['top'][top_idx[-2],0]:
             final_centroids['top'] = full_coords['top'][top_idx[-1]]
         else:
-            top_idx_idx = len(top_idx_idx)-np.argmax([full_coords['top'][top_idx[-1],1], full_coords['top'][top_idx[-2],1]])
+            top_idx_idx = np.argmax([full_coords['top'][top_idx[-2],1], full_coords['top'][top_idx[-1],1]])
             final_centroids['top'] = full_coords['top'][top_idx[top_idx_idx]]
         mid_idx = np.argsort(full_coords['mid'].sum(axis=1))
         final_centroids['mid'] = full_coords['mid'][mid_idx[-1]]
@@ -146,7 +151,7 @@ def getMostForward(coords, side = 'red', c_type = 'spec', res = '1920'):
         if full_coords['bot'].shape[0] == 1 or full_coords['bot'][bot_idx[-1],1] < 1.2*full_coords['bot'][bot_idx[-2],1]:
             final_centroids['bot'] = full_coords['bot'][bot_idx[-1]]
         else:
-            bot_idx_idx = len(bot_idx_idx)-np.argmax([full_coords['bot'][bot_idx[-1],0], full_coords['bot'][bot_idx[-2],0]])
+            bot_idx_idx = np.argmax([full_coords['bot'][bot_idx[-2],0], full_coords['bot'][bot_idx[-1],0]])
             final_centroids['bot'] = full_coords['bot'][bot_idx[bot_idx_idx]]
     return final_centroids
 
