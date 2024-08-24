@@ -17,6 +17,7 @@ from Main_menu import Menu_Main
 
 class RA():
     #store initial and global stuff
+    version = "v0.1.2"
     flag_sign = 0
     cur_page =0 #0=none, 1=main menu
     flag_main_menu_ready = 0
@@ -25,6 +26,7 @@ class RA():
     def __init__(self):
         self.check_data()
         self.check_patch()
+        self.hello()
 
     def check_patch(self):
         patch = self.ask_patch()
@@ -77,6 +79,13 @@ class RA():
                 json.dump({}, file)
                 self.flag_sign = 0
                 return
+            
+    def hello(self):
+        with open("data.json","r") as file:
+            data = json.load(file)
+        patch = data['patch']
+        print("\n\n Welcome to Replay Academy " + self.version + "\n Current Game patch: " + patch + "\n\n")
+        
 
 
             

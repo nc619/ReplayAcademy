@@ -15,6 +15,8 @@ from PIL import Image, ImageTk
 import requests
 import json
 
+from Match_processing import Match
+
 
 class Menu_Main(ttk.Frame):
     #To do: refresh button for all, kda color, special RA score 
@@ -348,7 +350,7 @@ class Menu_Main(ttk.Frame):
         if pos == 0:
             icon_num  = "Rank=" + data['tier'].capitalize() + ".png"
             cur_path = os.getcwd()
-            icon_path = os.path.join(cur_path, 'assets', 'ranked-emblems-latest', 'Ranked Emblems Latest',icon_num)
+            icon_path = os.path.join(cur_path, 'assets', 'Ranked Emblems Latest',icon_num)
             self.solo_img = Image.open(icon_path)
             len = round(0.17*self.window_y)
             self.solo_small = self.solo_img.resize((len,len), Image.Resampling.LANCZOS)
@@ -358,7 +360,7 @@ class Menu_Main(ttk.Frame):
         else:
             icon_num  = "Rank=" + data['tier'].capitalize() + ".png"
             cur_path = os.getcwd()
-            icon_path = os.path.join(cur_path, 'assets', 'ranked-emblems-latest', 'Ranked Emblems Latest',icon_num)
+            icon_path = os.path.join(cur_path, 'assets', 'Ranked Emblems Latest',icon_num)
             self.flex_img = Image.open(icon_path)
             len = round(0.17*self.window_y)
             self.flex_small = self.flex_img.resize((len,len), Image.Resampling.LANCZOS)
@@ -506,15 +508,13 @@ class Menu_Main(ttk.Frame):
     def build_a_match(self, game, region1, puuid, patch, pos, dir):
         f = ttk.Frame(self.f_match_hist, border=1, relief=SUNKEN)
         f.place(relheight=0.15,relwidth=1,relx=0, rely=0.15*pos)
-        url = "https://" + region1 + ".api.riotgames.com/lol/match/v5/matches/" + game
-        header = {"X-Riot-Token": self.api_key}
-        resp= requests.get(url, headers = header)
-        stat = resp.status_code
-        if self.handle_error(stat, "build each match") == 0:
-            return
-        match = resp.json()
-        with open("match_data.json","w") as file:
-                json.dump(match, file, indent=4)
+
+
+        cur_game = Match(game,puuid,region1)
+        cur_game.load_match_info()
+        match = cur_game.match_info
+        #with open("match_data.json","w") as file:
+        #        json.dump(match, file, indent=4)
         ids = match["metadata"]["participants"]
         user_pos = ids.index(puuid)
         user_info = match["info"]["participants"][user_pos]
@@ -668,10 +668,8 @@ class Menu_Main(ttk.Frame):
             l2.place(relx=0.54 + padx, rely=0.02 + 0.18*pady)
             l2.bind("<Button-1>", lambda e, name=cur_name: self.load_player(name))
 
-        game = game.replace('_', '-')
-        replay_file = game + ".rofl"
-        path = dir + "/" + replay_file
-        if os.path.isfile(path):
+ 
+        if cur_game.if_replay_exist(dir):
             b12 = ttk.Button(f, text="Analyse Replay", style=SUCCESS, command=lambda: self.analyse_replay(path))
             b12.place(relx = 0.9, rely=0.4)
         else:
