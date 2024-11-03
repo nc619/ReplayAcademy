@@ -190,7 +190,7 @@ im_red_fountain = {'x': 687, 'z': 54}
 # top_position['cameraPosition'] = {}
 # for key in blue_fountain:
     # top_position['cameraPosition'][key] = (red_fountain[key]-blue_fountain[key])/2-blue_fountain
-replay_id = "7081944263"
+replay_id = "7165122921"
 RU.openReplay(replay_id, port, authorization_header)
 # sleep(3)
 # is_replay_loading()
@@ -200,8 +200,9 @@ print("The replay has loaded!")
 
 # z is up/down, with higher z being lower
 # x
-# time = 
-out_dict = RU.allLaneStats(0, 3000)
+time = RU.getDirector('playback').json()['time']
+# time = 546.41
+# lane_dict = RU.allLaneStats(time = time, zoom_factor = 3400, delay = 1.8+2.5, res = '1920')
 # cameraData = {
 #     'cameraMode': 'fps',
 #     'farClip': 35000,
@@ -214,7 +215,6 @@ out_dict = RU.allLaneStats(0, 3000)
 #     'healthBarStructures': False,
 #     'healthBarWards': False,
 #     'interfaceAll': False,
-    
 # }
 
 
@@ -262,5 +262,109 @@ out_dict = RU.allLaneStats(0, 3000)
 # IP.getBars(masked_im, healthbars, res)
 # resize_im = IP.resizeImage(im, 2)
 # plotBars(resize_im)
+
+# # RU.getChampBar('Hezú Ilia', 'mana')
+## To find delay after which minions reappear: ##
+## top_pos = {'x': 13419.6552734375, 'y': 12517.6005859375, 'z': 1643.3787841796875}
+## top_or = {'x': 317.30035400390625, 'y': 45.99996566772461, 'z': 0.0}
+# top_pos = {'x': 10956.0, 'y': 3000.0, 'z': 2155.0}
+# top_or = {'x': 65.78810119628906, 'y': 46.15403366088867, 'z': 0.0}
+# delay = [i/10 for i in range(0,50,3)]
+# for d in delay:
+#     # RU.changeTime(time, d)
+#     # RU.allLaneStats(time, 3000, delay=d)
+#     RU.changeTime(time, d)
+#     print(f"Time: {d}")
+#     RU.editDirector('render', {'cameraMode': 'fps', 'cameraPosition': top_pos, 'cameraRotation': top_or})
+#     sleep(3)
+
+# """1.2 was found to be the best delay"""
+## ------------------------------------------- ## 
+    
+RU.editDirector('render', {'interfaceAll': True})
+champ_list = ['Penetrasion']
+champ_dict = RU.getChampStatus(champ_list, res = '1920')
+champ_pos = RU.getChampPos(champ_list)
 plt.show()
 pass
+
+#In 1k, the mapping from HUD to screen coordinates is:
+# y = 99*HUD + b
+# x = 99*HUD + a
+# where a and b are the intercepts of the top right line and the top left line
+# which are equal to the top left and top right coordinates when HUD = 0
+# which in this case are 235, 0 and 235, 193
+
+#1k:
+# hud = 0:
+# top_left: 235, 0
+# top_right1: 235, 193
+# top_right2: 245, 202
+
+# hud = 18
+# top_left: 219, 0
+# top_right1: 219, 210
+# top_right2: 231, 219
+
+# hud = 48:
+# top_left: 193, 0
+# top_right1: 193, 242
+# top_right2: 206, 252
+
+# hud = 71:
+# top_left: 175, 0
+# top_right1: 175, 265
+# top_right2: 189, 275
+
+# hud = 89:
+# top_left: 160, 0
+# top_right1: 160, 282
+# top_right2: 175, 294
+
+# hud = 100:
+# top_left: 150, 0
+# top_right1: 150, 293
+# top_right2: 165, 305
+
+
+#4k:
+# hud = 0:
+# top_left: 470, 0
+# top_right1: 470, 387
+# top_right2: 491,404
+
+# hud = 1:
+# top_left: 468, 0
+# top_right1: 468, 389
+# top_right2: 489, 406
+
+# hud = 8:
+# top_left: 456, 0
+# top_right1: 456, 403
+# top_right2: 478, 421
+
+# hud = 25:
+# top_left: 428, 0
+# top_right1: 427, 437
+# top_right2: 451, 456
+
+# hud = 50:
+# top_left: 386, 0
+# top_right1: 386, 486
+# top_right2: 412, 508
+
+# hud = 75:
+# top_left: 344, 0
+# top_right1: 344, 537
+# top_right2: 372, 561
+
+# hud = 100:
+# top_left: 301, 0
+# top_right1: 301, 587
+# top_right2: 332, 613
+
+
+# hud = 100 (multiply the difference by 99)
+# top_left: 272, 0
+# top_right1: 272, 585
+# top_right2: 293, 602

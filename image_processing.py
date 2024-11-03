@@ -13,9 +13,12 @@ from sklearn.cluster import DBSCAN
 import replay_utils as RU
 import cv2
 
-
-def getBars(im, colours, res):
-    lower_black, upper_black = np.array([7, 7, 7]), np.array([21, 21, 21])
+def getBars(im, colours, res, first_flag = True):
+    if res == '3840':
+        lower_black, upper_black = np.array([7, 7, 7]), np.array([28, 28, 28])
+    elif res == '1920':
+        lower_black, upper_black = np.array([9, 9, 9]), np.array([21,21,21])
+    
     im_binary = cv2.inRange(im,lower_black, upper_black)
     im_rgb = applyColourMask(im, colours)
     labeled_binary = M.label(im_binary, connectivity=1)
@@ -24,12 +27,20 @@ def getBars(im, colours, res):
     health_percentages = []
 
     # Iterate over each labeled region
+    paddings = {'3840': 3, '1920': 1}
+    padding = paddings[res]
+    lims = {'3840': [10,  110], '1920': [6, 62]}
     for region in M.regionprops(labeled_binary):
         # Get the coordinates of the bounding box
         min_row, min_col, max_row, max_col = region.bbox
-        
+        # if max_row - min_row > lims[res][0]:
+        #     max_row = min_row + lims[res][0]
+        #     # print("Resizing row")
+        # if max_col - min_col > lims[res][1]:
+        #     max_col = min_col + lims[res][1]
+            # print("Resizing col")
         # Extract the corresponding region from the RGB image
-        health_bar_region = im_rgb[min_row+1:max_row-1, min_col+1:max_col-1]
+        health_bar_region = im_rgb[min_row+padding:max_row-padding, min_col+padding:max_col-padding]
         
         # Calculate the percentage HP
         total_pixels = np.prod(health_bar_region.shape[:2])
@@ -37,16 +48,36 @@ def getBars(im, colours, res):
         percentage_hp = (value_pixels / total_pixels) * 100
         if percentage_hp > 0:
             # Append the percentage HP to the list
+            if max_row - min_row > lims[res][0]:
+                if first_flag:
+                    raise("Turning image")
+                else:
+                    max_row = min_row + lims[res][0]
+                    print("Resizing row")
+            if max_col - min_col > lims[res][1]:
+                if first_flag:
+                    raise("Turning image")
+                else:
+                    max_col = min_col + lims[res][1]
+                    print("Resizing col")
+            health_bar_region = im_rgb[min_row+padding:max_row-padding, min_col+padding:max_col-padding]
+            # Calculate the percentage HP
+            total_pixels = np.prod(health_bar_region.shape[:2])
+            value_pixels = np.sum(health_bar_region.sum(axis=-1) > 0)  # Counting non-zero pixels
+            percentage_hp = (value_pixels / total_pixels) * 100
+            
             health_percentages.append(percentage_hp)
+
 
     # Print the percentage HP for each health bar
     return np.array(health_percentages), len(health_percentages)
 
-def getScreenshot(window):
+def getScreenshot(window, res):
     hwnd = win32gui.FindWindow(None, 'League of Legends (TM) Client')
 
     # Uncomment the following line if you use a high DPI display or >100% scaling size
-    # windll.user32.SetProcessDPIAware()
+    if res == '3840':
+        windll.user32.SetProcessDPIAware()
 
     # Change the line below depending on whether you want the whole window
     # or just the client area. 
@@ -92,10 +123,12 @@ def getScreenshot(window):
 def resizeImage(im, reduce_factor = 2):
     out_im = T.resize(im, (im.shape[0]//reduce_factor, im.shape[1]//reduce_factor), anti_aliasing=True)
     return np.array(out_im*255, dtype=np.uint8)
+
 def applyMonoMask(im, colour_idx = 0, mask_limit = 200):
     out_im = im.copy()
     out_im[out_im[:,:,colour_idx] < mask_limit] = 0
     return out_im
+
 def applyColourMask(im, colours):
     out_im = np.zeros_like(im)
     for colour in colours:
@@ -127,19 +160,19 @@ def findBars(im):
     # Print the centroids coordinates
     print("Centroids of clusters (y, x):", centroids)
 
-def findClusters2(im):
+def findClusters2(im, M = 30, min_samples = 1):
     im = im.copy()
     im = C.rgb2gray(im)
     im[im > 0.1] = 1
 
     # Parameters
-    M = 30  # Maximum distance between bars to be considered in the same cluster
+    # M = 30  # Maximum distance between bars to be considered in the same cluster
 
     # Find coordinates of white pixels
     white_pixel_coords = np.column_stack(np.where(im == 1))
 
     # Apply DBSCAN to cluster white pixels
-    db = DBSCAN(eps=M, min_samples=1, metric='euclidean').fit(white_pixel_coords)
+    db = DBSCAN(eps=M, min_samples=min_samples, metric='euclidean').fit(white_pixel_coords)
     labels = db.labels_
 
     # Find centroids of clusters
@@ -161,7 +194,7 @@ def findClusters2(im):
     # plt.show()
 
     # Print the centroids coordinates
-    print("Centroids of clusters (y, x):", centroids)
+    # print("Centroids of clusters (y, x):", centroids)
     return centroids
 
 def findClusters(im, size = (70,70), n_steps = 8):
