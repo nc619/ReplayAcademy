@@ -5,6 +5,9 @@ import image_processing as IP
 import cv2
 import matplotlib.pyplot as plt
 from itertools import product
+from PIL import Image
+import easyocr
+
 
 topView = {
     'cameraMode': 'fps',
@@ -141,6 +144,8 @@ HP_col = {'red3840': [[ 95,  49,  46],
            [52, 104, 142],
            [52, 104, 141],
            ],
+          'red2560': [[]],
+          'blue2560': [[]],
           'red960': [[]],
           'blue960': [[]],
           'hud_filler' : [[19, 19, 19]]}
@@ -175,6 +180,11 @@ def mapHUD(H_new, x_0, y_0, res = '1920', H_old = 0):
     if res == '3840':
         a1,b1,c1 = -0.00026497, -1.65894, 469.664
         a2,b2,c2 = 0.00011806, 2.07904, 404.044
+    elif res == '2560':
+        a1,b1,c1 = 2.63748974e-04, -1.16223481e+00,  3.14076784e+02
+        a2,b2,c2 = 5.26188644e-07, 1.40076643e+00, 2.67981431e+02
+        # a1,b1,c1 = 3.31852603e-04, -1.17249532e+00,  3.13956895e+02
+        # a2,b2,c2 = -1.05239140e-04,  1.41173298e+00,  2.68911353e+02
     elif res == '1920':
         a1,b1,c1 = 0.000297378506, -0.871987906, 234.776357
         a2,b2,c2 = -0.0000185854412, 1.03969139, 201.422701
@@ -182,6 +192,8 @@ def mapHUD(H_new, x_0, y_0, res = '1920', H_old = 0):
     y_right = lambda H: a2*(H**2) + b2*H + c2
     if res == '3840':
         im_height = 800
+    elif res == '2560':
+        im_height = 533
     elif res == '1920':
         im_height = 400
     
@@ -189,7 +201,7 @@ def mapHUD(H_new, x_0, y_0, res = '1920', H_old = 0):
     x_new = x_up(H_new)+r_x0*(im_height-x_up(H_new))
     r_y0 = y_0/y_right(H_old)
     y_new = r_y0*y_right(H_new)
-    return (int(np.round(x_new)), int(np.round(y_new)))
+    return (int(np.floor(x_new)), int(np.ceil(y_new)))
     
 def getChampBar(name, type, res, time = None):
     editDirector('render', {'interfaceAll': True})
@@ -200,6 +212,7 @@ def getChampBar(name, type, res, time = None):
         # try: 
     sleep(0.1)
     multipliers = {'1920': 2, '3840': 4, '960': 0.5, '2560': 2.6667}
+    add_y = {'1920': 1, '3840': 2, '2560': 1}
     im = np.array(IP.getScreenshot(None, res))[-int(200*multipliers[res]):,:int(250*multipliers[res])]
     empty_mask = IP.applyColourMask(im, HP_col['hud_filler'])
     lower_col, upper_col = up_down_col[type]
@@ -215,9 +228,9 @@ def getChampBar(name, type, res, time = None):
         return 0
     bar_length = w
     if type == 'hp' or type == 'mana':
-        bar_empty = empty_mask[y+multipliers[res], x+w:]
+        bar_empty = empty_mask[y+add_y[res], x+w:]
     else:
-        bar_empty = empty_mask[y+multipliers[res], x+w:]
+        bar_empty = empty_mask[y+add_y[res], x+w:]
     bar_empty_length = np.where(bar_empty == 0)[0].min()-1
     bar_percent = bar_length/(bar_length+bar_empty_length)
     editDirector('render', {'interfaceAll': False})
@@ -227,27 +240,143 @@ def getChampBar(name, type, res, time = None):
 
     return bar_percent
 
-def getHUDScale(name, res = '1920'):
+def getChampIcon(champ_name):
+    # Get the latest version
+    versions_url = "https://ddragon.leagueoflegends.com/api/versions.json"
+    latest_version = requests.get(versions_url).json()[0]
+
+    # Get champion data
+    champions_url = f"https://ddragon.leagueoflegends.com/cdn/{latest_version}/data/en_US/champion.json"
+    champions_data = requests.get(champions_url).json()["data"]    
+    icon_url = f"https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/champion/{champ_name}.png"
+    return np.array(Image.open(requests.get(icon_url, stream=True).raw))
+
+
+def getHUDScale(name, champ_name, res = '1920'):
     editDirector('render', {'interfaceAll': True})
     editDirector('render', {'selectionName': name})
     sleep(0.1)
     multipliers = {'1920': 2, '3840': 4, '960': 0.5, '2560': 2.6667}
-    ap_icon = np.load('assets/ap_icon.npy')
+    hud_offset = {'1920': 0, '2560': 0, '3840': 1}
+    champ_icon = getChampIcon(champ_name)
     im = np.array(IP.getScreenshot(None, res))[-int(200*multipliers[res]):,:int(250*multipliers[res])]
-    x0, y0 = 248, 155
-    x1, y1 = 257, 164
+    if res == '1920': # THIS IS WRONG NEEDS TO BE CHANGED WHEN 1K SCREEN IS AVAILABLE
+        x0, y0 = 248, 155
+        x1, y1 = 257, 164
+    elif res == '2560':
+        x0, y0 = 330, 10
+        x1, y1 = 381, 61
+    elif res == '3840':
+        x0, y0 = 494, 16
+        x1, y1 = 570, 92
     similarities = []
     for H in range(101):
         x0_new, y0_new = mapHUD(H, x0, y0, res)
         x1_new, y1_new = mapHUD(H, x1, y1, res)
         # downsample the icon
-        ap_icon_ds = cv2.resize(ap_icon, (x1_new-x0_new, y1_new-y0_new))
-        similarities.append(np.sum(np.abs(ap_icon_ds-im[y0_new:y1_new,x0_new:x1_new])))
-    return similarities, np.argmin(similarities)
+        champ_icon_ds = cv2.resize(champ_icon, (y1_new-y0_new, x1_new-x0_new))
+        similarities.append(np.mean(np.abs(champ_icon_ds-im[x0_new:x1_new,y0_new:y1_new])))
+
+    return similarities, np.argmin(similarities)-(hud_offset[res] if np.argmin(similarities) != 0 else 0)
+
+def getSummonerSpellCD(names, res = '1920', HUD = 0):
+    out_cds = {name: [] for name in names}
+    for name in names:
+        editDirector('render', {'interfaceAll': True})
+        editDirector('render', {'selectionName': name})
+        sleep(0.1)
+        multipliers = {'1920': 2, '3840': 4, '960': 0.5, '2560': 2.6667}
+        im = np.array(IP.getScreenshot(None, res))[-int(200*multipliers[res]):,:int(250*multipliers[res])]
+        if res == '3840':
+            x0, y0 = 587, 290
+            x1, y1 = 629+1, 332+1
+            x2, y2 = 587, 336
+            x3, y3 = 629+1, 378+1
+        elif res == '2560':
+            x0, y0 = 391, 193
+            x1, y1 = 419+1, 221+1
+            x2, y2 = 391, 224
+            x3, y3 = 419+1, 252+1
+        x0, y0 = mapHUD(HUD, x0, y0, res)
+        x1, y1 = mapHUD(HUD, x1, y1, res)
+        x2, y2 = mapHUD(HUD, x2, y2, res)
+        x3, y3 = mapHUD(HUD, x3, y3, res)
+        summoner1 = im[x0:x1,y0:y1]
+        summoner2 = im[x2:x3,y2:y3]
+        reader = easyocr.Reader(['en'])
+        results1 = reader.readtext(summoner1, allowlist = '0123456789', text_threshold = 0.4, low_text = 0.3, link_threshold = 0.2)
+        results2 = reader.readtext(summoner2, allowlist = '0123456789', text_threshold = 0.4, low_text = 0.2, link_threshold = 0.2)
+        if len(results1) == 0:
+            out_cds[name].append(0)
+        else:
+            out_cds[name].append(results1[np.array(list(map(lambda x: x[1:],results1)))[:,1].argmax()][1])
+        if len(results2) == 0:
+            out_cds[name].append(0)
+        else:
+            out_cds[name].append(results2[np.array(list(map(lambda x: x[1:],results2)))[:,1].argmax()][1])
+    return out_cds
+#-1 down at HUD = 13
+#
+
+def getRecall(name, res = '1920', HUD = 0, threshold = 0.3):
+    editDirector('render', {'interfaceAll': True})
+    editDirector('render', {'selectionName': name})
+    recall_icon = np.array(Image.open(requests.get('https://raw.communitydragon.org/latest/game/data/images/ui/teleporthome.png', stream=True).raw))
+    multipliers = {'1920': 2, '3840': 4, '960': 0.5, '2560': 2.6667}
+    im = np.array(IP.getScreenshot(None, res))[-int(200*multipliers[res]):,:int(250*multipliers[res])]
+    if res == '3840':
+        x0, y0 = 435, 1
+        x1, y1 = 465+1, 31+1
+        x0_up, y0_up = 402, 1
+        x1_up, y1_up = 432+1, 31+1
+        icon_length = y1-y0-1
+        long_icon_offset = 7
+        short_icon_offset = 3
+        in_icon_x_offset_up = 3
+        in_icon_y_offset_left = 2
+        in_icon_y_offset_right = 4
+        in_icon_x_offset_down = 3
+    for i in range(5):  
+        y0_final = y0 + in_icon_y_offset_left
+        y1_final = y1 - in_icon_y_offset_right
+        y0_up_final = y0_up + in_icon_y_offset_left
+        y1_up_final = y1_up - in_icon_y_offset_right
+        x0_final = x0 + in_icon_x_offset_up
+        x1_final = x1 - in_icon_x_offset_down
+        x0_up_final = x0_up + in_icon_x_offset_up
+        x1_up_final = x1_up - in_icon_x_offset_down
+        
+        x0_new, y0_new = mapHUD(HUD, x0_final, y0_final, res)
+        x1_new, y1_new = mapHUD(HUD, x1_final, y1_final, res)
+        x0_up_new, y0_up_new = mapHUD(HUD, x0_up_final, y0_up_final, res)
+        x1_up_new, y1_up_new = mapHUD(HUD, x1_up_final, y1_up_final, res)
+        current_icon = im[x0_new:x1_new,y0_new:y1_new]
+        current_icon_up = im[x0_up_new:x1_up_new,y0_up_new:y1_up_new]
+
+        sim = np.mean(np.abs(current_icon-cv2.resize(recall_icon, (current_icon.shape[1], current_icon.shape[0]))[:,:,:-1]))/255
+        sim_up = np.mean(np.abs(current_icon_up-cv2.resize(recall_icon, (current_icon_up.shape[1], current_icon_up.shape[0]))[:,:,:-1]))/255
+        if sim < threshold or sim_up < threshold:
+            return True
+        y0 += icon_length+short_icon_offset
+        y1 += icon_length+short_icon_offset
+        y0_up += icon_length+short_icon_offset
+        y1_up += icon_length+short_icon_offset
+    return False
+
+
+def isLongIcon(icon, threshold = 0.8):
+    smite_icon = np.array(Image.open(requests.get('https://raw.communitydragon.org/latest/game/data/images/ui/smite.png', stream=True).raw))
+    gold_quest_progress_icon = np.array(Image.open(requests.get('https://raw.communitydragon.org/latest/game/data/images/ui/goldquestprogress.png', stream=True).raw))
+    # take the top half of each icon
+    smite_icon = smite_icon[:smite_icon.shape[0]//2,:]
+    gold_quest_progress_icon = gold_quest_progress_icon[:gold_quest_progress_icon.shape[0]//2,:]
+    smite_icon = cv2.resize(smite_icon, (icon.shape[1], icon.shape[0]))
+    gold_quest_progress_icon = cv2.resize(gold_quest_progress_icon, (icon.shape[1], icon.shape[0]))
+    return np.mean(np.abs(icon-smite_icon)) > threshold or np.mean(np.abs(icon-gold_quest_progress_icon)) > threshold
 
 def changeTime(time, delay):
-    editDirector('playback', {'time': time-delay, 'paused': False})
-    sleep(delay)
+    editDirector('playback', {'time': time-delay, 'paused': False, 'speed': 2})
+    sleep(delay/2)
     editDirector('playback', {'paused': True})
 
 def allLaneStats(time, zoom_factor = 3000, res = '1920', delay = 0.8):
@@ -260,8 +389,8 @@ def allLaneStats(time, zoom_factor = 3000, res = '1920', delay = 0.8):
     # sleep(5)
     im = np.array(IP.getScreenshot(None,res))
     final_centroids = {}
-    Ms = {'1920': 30, '3840': 120, '2560': 60}
-    min_sampless = {'1920': 125, '3840': 500, '2560': 250}
+    Ms = {'1920': 30, '3840': 60, '2560': 40}
+    min_sampless = {'1920': 50, '3840': 100, '2560': 75}
     for side in ['red', 'blue']:
         masked_im = IP.applyColourMask(im, HP_col[f'{side}{res}'])
         centroids = IP.findClusters2(masked_im, M = Ms[res], min_samples=min_sampless[res])
@@ -273,7 +402,7 @@ def allLaneStats(time, zoom_factor = 3000, res = '1920', delay = 0.8):
     for lane in lane_stats:
         lane_stats[lane] = getLaneStat(lane, time, res, 'multi', zoom_factor, final_centroids, delay = delay)
     return lane_stats
-    
+
 def getLaneStat(lane, time, res = '1920', mode = 'single', zoom_factor = 3000, final_centroids = None, delay = 0.8):
     if time < 65:
         return -1
@@ -282,8 +411,8 @@ def getLaneStat(lane, time, res = '1920', mode = 'single', zoom_factor = 3000, f
         changeTime(time,delay)
         editDirector('render', topView)
         editDirector('render', {type_dict['minion']: True})
-        Ms = {'1920': 30, '3840': 120, '2560': 60}
-        min_sampless = {'1920': 125, '3840': 500, '2560': 250}
+        Ms = {'1920': 30, '3840': 60, '2560': 40}
+        min_sampless = {'1920': 50, '3840': 100, '2560': 75}
         for side in ['red', 'blue']:
             im = np.array(IP.getScreenshot(None), res)
             masked_im = IP.applyColourMask(im, HP_col[f'{side}{res}'])

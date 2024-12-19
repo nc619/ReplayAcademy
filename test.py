@@ -1,103 +1,242 @@
-list = [
-    "EUW1_6955481755",
-    "EUW1_6955459688",
-    "EUW1_6955215255",
-    "EUW1_6951023805",
-    "EUW1_6951003670",
-    "EUW1_6950968706",
-    "EUW1_6950935804",
-    "EUW1_6950908033",
-    "EUW1_6950868312",
-    "EUW1_6949801759",
-    "EUW1_6949752868",
-    "EUW1_6949701068",
-    "EUW1_6949644922",
-    "EUW1_6949583326",
-    "EUW1_6942532521",
-    "EUW1_6942478826",
-    "EUW1_6942406006",
-    "EUW1_6941417971",
-    "EUW1_6940293634",
-    "EUW1_6940236298",
-    "EUW1_6940182888",
-    "EUW1_6939621630",
-    "EUW1_6939569900",
-    "EUW1_6939561962",
-    "EUW1_6939517296",
-    "EUW1_6939488678",
-    "EUW1_6930412321",
-    "EUW1_6930390254",
-    "EUW1_6930371114",
-    "EUW1_6930355864",
-    "EUW1_6930331119",
-    "EUW1_6896357686",
-    "EUW1_6896332234",
-    "EUW1_6884664192",
-    "EUW1_6883402018",
-    "EUW1_6883345179",
-    "EUW1_6883275953",
-    "EUW1_6882039573",
-    "EUW1_6881956261",
-    "EUW1_6881912985",
-    "EUW1_6880550210",
-    "EUW1_6880493343",
-    "EUW1_6880204062",
-    "EUW1_6880136046",
-    "EUW1_6877557217",
-    "EUW1_6870344096",
-    "EUW1_6870305084",
-    "EUW1_6870262949",
-    "EUW1_6860517585",
-    "EUW1_6860480494",
-    "EUW1_6860439229",
-    "EUW1_6860400612",
-    "EUW1_6860348741",
-    "EUW1_6855237483",
-    "EUW1_6855172897",
-    "EUW1_6855120982",
-    "EUW1_6854833956",
-    "EUW1_6848897297",
-    "EUW1_6848874660",
-    "EUW1_6848379186",
-    "EUW1_6848311916",
-    "EUW1_6848249169",
-    "EUW1_6847978973",
-    "EUW1_6847940534",
-    "EUW1_6847872985",
-    "EUW1_6847816190",
-    "EUW1_6847750760",
-    "EUW1_6847705596",
-    "EUW1_6847211884",
-    "EUW1_6847202610",
-    "EUW1_6847177316",
-    "EUW1_6846357270",
-    "EUW1_6845906322",
-    "EUW1_6845892777",
-    "EUW1_6845593499",
-    "EUW1_6845530181",
-    "EUW1_6845309374",
-    "EUW1_6845266603",
-    "EUW1_6841575183",
-    "EUW1_6841507368",
-    "EUW1_6841431439",
-    "EUW1_6837523328",
-    "EUW1_6837446006",
-    "EUW1_6835253804",
-    "EUW1_6835231854",
-    "EUW1_6835213225",
-    "EUW1_6835072195",
-    "EUW1_6835033564",
-    "EUW1_6834427536",
-    "EUW1_6834346273",
-    "EUW1_6834293597",
-    "EUW1_6833752610",
-    "EUW1_6833727137",
-    "EUW1_6832207306",
-    "EUW1_6832135844",
-    "EUW1_6831628810",
-    "EUW1_6831543860",
-    "EUW1_6830780898",
-    "EUW1_6830733290",
-    "EUW1_6826245652"]
+# from urllib.request import urlopen
+# url = "https://u.gg/lol/champions/riven/counter"
+# page = urlopen(url)
+# print(page)
+# html_bytes = page.read()
+# html = html_bytes.decode("utf-8")
+# print(html)
 
-print(len(list))
+# import requests
+
+# headers = {
+#     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+# }
+
+import numpy as np
+
+class statsData:
+    def __init__(self, champ_dict) -> None:
+        self.n_champs = len(champ_dict)
+        self.champ_dict = champ_dict
+        # Initialize square matrix with zeros
+        self.data = np.zeros((self.n_champs, self.n_champs))
+    
+    def update_matchup(self, champ1, champ2, value):
+        """Update matchup data between two champions"""
+        if champ1 == "alistar":
+            pass
+        if "nunu" in champ2.lower() or "renata" in champ2.lower():
+            champ2 = champ2.split(" ")[0]
+        champ1 = champ1.replace("'","").replace(" ","").replace("-","").replace(".","").lower()
+        champ2 = champ2.replace("'","").replace(" ","").replace("-","").replace(".","").lower()
+        if champ1 in self.champ_dict and champ2 in self.champ_dict:
+            i = self.champ_dict[champ1]
+            j = self.champ_dict[champ2]
+            self.data[i][j] = value
+        else:
+            raise("Champion name was incorrect \nNote: for Nunu & Willump, champ name is just Nunu and for Renata Glasc champ name is just Renata.")
+    
+    def get_matchup(self, champ1, champ2):
+        """Get matchup data between two champions"""
+        if "nunu" in champ2 or "renata" in champ2:
+            champ2 = champ2.split(" ")[0]
+        champ1 = champ1.replace("'","").replace(" ","").replace("-","").replace(".","").lower()
+        champ2 = champ2.replace("'","").replace(" ","").replace("-","").replace(".","").lower()
+        if champ1 in self.champ_dict and champ2 in self.champ_dict:
+            i = self.champ_dict[champ1]
+            j = self.champ_dict[champ2]
+            return self.data[i][j]
+        return None
+
+class gameStats:
+    def __init__(self, champ_dict, mode = "create") -> None:
+        self.roles = ['top', 'jungle', 'mid', 'adc', 'support']
+        self.champ_dict = champ_dict
+        self.processed_champions = set()
+        
+        # Create nested dictionaries for each stat type and role
+        self.winrate = {role: statsData(champ_dict) for role in self.roles}
+        self.ngames = {role: statsData(champ_dict) for role in self.roles}
+        self.gold_diff = {role: statsData(champ_dict) for role in self.roles}
+        
+        if mode == "load":
+            self._load_data()
+        else:
+            self._populate_all_data()
+    
+    def _populate_all_data(self):
+        """Populates data for all champions in all roles"""
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--window-size=1920,1080")
+
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+        try:
+            for champion in self.champ_dict.keys():
+                if champion not in self.processed_champions:
+                    print(f"Processing {champion}...")
+                    for role in self.roles:
+                        print(f"  Role: {role}")
+                        self._populate_data(champion, role, driver)
+                    self.processed_champions.add(champion)
+                    self._save_progress()
+        finally:
+            driver.quit()
+    
+    def _populate_data(self, champion, role, driver):
+        """Scrapes and populates matchup data for a given champion in a specific role"""
+        url = f"https://u.gg/lol/champions/{champion}/counter?role={role}"
+        driver.get(url)
+
+        try:
+            # Handle consent button
+            consent_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'fc-cta-consent')]"))
+            )
+            consent_button.click()
+        except:
+            pass
+
+        try:
+            # Click "See More Champions"
+            see_more_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[text()='See More Champions']"))
+            )
+            see_more_button.click()
+        except:
+            pass
+
+        try:
+            # Wait for data to load
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "counters-container"))
+            )
+
+            # Get gold differences
+            counters_container = driver.find_element(By.CLASS_NAME, "counters-container")
+            third_column = counters_container.find_elements(By.CLASS_NAME, "counters-column")[2]
+            champion_cards = third_column.find_elements(By.CLASS_NAME, "counter-list-card")
+            
+            for card in champion_cards:
+                counter_champ = card.find_elements(By.CLASS_NAME, "champion-name")[0].text
+                gold_diff = float(card.find_elements(By.CLASS_NAME, "win-rate")[0].text.split(" ")[0])
+                games = int(card.find_elements(By.CLASS_NAME, "total-games")[0].text.split(" ")[0].replace(",",""))
+                
+                self.ngames[role].update_matchup(champion, counter_champ, games)
+                self.gold_diff[role].update_matchup(champion, counter_champ, gold_diff)
+            
+            # Get winrates
+            second_column = counters_container.find_elements(By.CLASS_NAME, "counters-column")[1]
+            champion_cards = second_column.find_elements(By.CLASS_NAME, "counter-list-card")
+            
+            for card in champion_cards:
+                counter_champ = card.find_elements(By.CLASS_NAME, "champion-name")[0].text
+                winrate = float(card.find_elements(By.CLASS_NAME, "win-rate")[0].text.split("%")[0])
+                self.winrate[role].update_matchup(champion, counter_champ, winrate)
+                
+        except Exception as e:
+            print(f"Error processing {champion} {role}: {str(e)}")
+    
+    def _save_progress(self):
+        """Save current progress to files"""
+        try:
+            for role in self.roles:
+                np.save(f'winrate_data_{role}.npy', self.winrate[role].data)
+                np.save(f'ngames_data_{role}.npy', self.ngames[role].data)
+                np.save(f'gold_diff_data_{role}.npy', self.gold_diff[role].data)
+            
+            with open('processed_champions.json', 'w') as f:
+                json.dump(list(self.processed_champions), f)
+        except Exception as e:
+            print(f"Error saving progress: {str(e)}")
+    
+    def _load_data(self):
+        """Load previously saved data"""
+        try:
+            for role in self.roles:
+                self.winrate[role].data = np.load(f'winrate_data_{role}.npy')
+                self.ngames[role].data = np.load(f'ngames_data_{role}.npy')
+                self.gold_diff[role].data = np.load(f'gold_diff_data_{role}.npy')
+            
+            with open('processed_champions.json', 'r') as f:
+                self.processed_champions = set(json.load(f))
+        except Exception as e:
+            print(f"Error loading data: {str(e)}")
+    
+    def get_winrate(self, champ1, champ2, role):
+        """Get winrate for champ1 vs champ2 matchup in specific role"""
+        return self.winrate[role].get_matchup(champ1, champ2)
+    
+    def get_ngames(self, champ1, champ2, role):
+        """Get number of games played for champ1 vs champ2 matchup in specific role"""
+        return self.ngames[role].get_matchup(champ1, champ2)
+    
+    def get_golddiff(self, champ1, champ2, role):
+        """Get average gold difference for champ1 vs champ2 matchup in specific role"""
+        return self.gold_diff[role].get_matchup(champ1, champ2)
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+import numpy as np
+import urllib, json
+from datetime import date, timedelta, datetime
+
+# # Set up Chrome options
+# chrome_options = Options()
+# # chrome_options.add_argument("--headless")  # Uncomment this if you want to run in headless mode
+# chrome_options.add_argument("--window-size=1920,1080")
+
+# # Initialize the driver
+# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+# try:
+#     # Get the page
+#     url = "https://u.gg/lol/champions/riven/counter"
+#     driver.get(url)
+
+#     # Wait for the consent button to be clickable and click it
+#     consent_button = WebDriverWait(driver, 30).until(
+#         EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'fc-cta-consent')]"))
+#     )
+#     consent_button.click()
+
+#     # Wait for the "See More Champions" button to be clickable and click it
+#     see_more_button = WebDriverWait(driver, 30).until(
+#         EC.element_to_be_clickable((By.XPATH, "//div[text()='See More Champions']"))
+#     )
+#     see_more_button.click()
+
+
+#     # Extract champion names from hrefs
+#     champions = []
+#     counters_container = driver.find_element(By.CLASS_NAME, "counters-container")
+#     third_column = counters_container.find_elements(By.CLASS_NAME, "counters-column")[2]
+#     champion_cards = third_column.find_elements(By.CLASS_NAME, "counter-list-card")
+    
+#     gold_diffs = np.array([(c.find_elements(By.CLASS_NAME, "champion-name")[0].text,int(c.find_elements(By.CLASS_NAME, "win-rate")[0].text.split(" ")[0]),int(c.find_elements(By.CLASS_NAME, "total-games")[0].text.split(" ")[0].replace(",",""))) for c in champion_cards])
+# finally:
+#     driver.quit()
+
+versions_url = "https://ddragon.leagueoflegends.com/api/versions.json"
+with urllib.request.urlopen(versions_url) as url:
+    versions = json.load(url)
+    version = versions[0]
+champion_url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
+
+with urllib.request.urlopen(champion_url) as url:
+    champ_json = json.load(url)
+
+champ_dict = {}
+for i,champ_name in enumerate(champ_json['data']):
+    if champ_name.replace(' ','').lower() == 'monkeyking':
+        champ_name = "wukong"
+    champ_dict[f"{champ_name.replace(' ','').lower()}"] = i
+
+myStats = gameStats(champ_dict, "load")
+pass

@@ -190,11 +190,11 @@ im_red_fountain = {'x': 687, 'z': 54}
 # top_position['cameraPosition'] = {}
 # for key in blue_fountain:
     # top_position['cameraPosition'][key] = (red_fountain[key]-blue_fountain[key])/2-blue_fountain
-replay_id = "7165122921"
+replay_id = "7231022351"
 RU.openReplay(replay_id, port, authorization_header)
 # sleep(3)
 # is_replay_loading()
-# while(is_replay_loading(port, authorization_header)):
+# while(is_replay_loading(port, auth de orization_header)):
 #     sleep(5)
 print("The replay has loaded!")
 
@@ -202,7 +202,7 @@ print("The replay has loaded!")
 # x
 time = RU.getDirector('playback').json()['time']
 # time = 546.41
-# lane_dict = RU.allLaneStats(time = time, zoom_factor = 3400, delay = 1.8+2.5, res = '1920')
+# lane_dict = RU.allLaneStats(time = time, zoom_factor = 3400, delay = 1.8+2.5, res = '2560')
 # cameraData = {
 #     'cameraMode': 'fps',
 #     'farClip': 35000,
@@ -282,9 +282,14 @@ time = RU.getDirector('playback').json()['time']
 ## ------------------------------------------- ## 
     
 RU.editDirector('render', {'interfaceAll': True})
-champ_list = ['Penetrasion']
-champ_dict = RU.getChampStatus(champ_list, res = '1920')
-champ_pos = RU.getChampPos(champ_list)
+champ_list = ['Penetrasion','Yoiyrtor','aminatoooo','Hagalund','Mel2']
+champ_dict = RU.getChampStatus(champ_list, res = '2560')
+# champ_pos = RU.getChampPos(champ_list)
+_, HUD_scale = RU.getHUDScale('Penetrasion', "Fiora", res = '2560')
+print(HUD_scale)
+cds = RU.getSummonerSpellCD(champ_list, res = '2560', HUD = HUD_scale)
+recall = RU.getRecall('Dmonnantim', res = '2560', HUD = HUD_scale)
+# print(cds)
 plt.show()
 pass
 
@@ -326,6 +331,51 @@ pass
 # top_right1: 150, 293
 # top_right2: 165, 305
 
+#2k:
+# hud = 0:
+# top_left: 314, 0
+# top_right1: 314, 257
+# top_right2: 327, 268
+
+#hud = 18:
+# top_left: 293, 0
+# top_right1: 293, 281
+# top_right2: 308, 293
+
+# hud = 28:
+# top_left: 282, 0
+# top_right1: 282, 294
+# top_right2: 298, 307
+
+# hud = 36
+# top_left: 273, 0
+# top_right1: 273, 306
+# top_right2: 289, 319
+
+# hud = 52:
+# top_left: 254, 0
+# top_right1: 254, 326
+# top_right2: 272, 341
+
+# hud = 63:
+# top_left: 242, 0
+# top_right1: 242, 341
+# top_right2: 260, 356
+
+# hud = 71:
+# top_left: 233, 0
+# top_right1: 233, 351
+# top_right2: 251, 367
+
+# hud = 89:
+# top_left: 212, 0
+# top_right1: 212, 376
+# top_right2: 232, 393
+
+# hud = 100:
+# top_left: 201, 0
+# top_right1: 201, 391
+# top_right2: 221, 408
 
 #4k:
 # hud = 0:

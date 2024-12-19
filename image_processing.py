@@ -29,7 +29,7 @@ def getBars(im, colours, res, first_flag = True):
     # Iterate over each labeled region
     paddings = {'3840': 3, '1920': 1}
     padding = paddings[res]
-    lims = {'3840': [10,  110], '1920': [6, 62]}
+    lims = {'3840': [11,  114], '1920': [6, 62]}
     for region in M.regionprops(labeled_binary):
         # Get the coordinates of the bounding box
         min_row, min_col, max_row, max_col = region.bbox
@@ -46,18 +46,21 @@ def getBars(im, colours, res, first_flag = True):
         total_pixels = np.prod(health_bar_region.shape[:2])
         value_pixels = np.sum(health_bar_region.sum(axis=-1) > 0)  # Counting non-zero pixels
         percentage_hp = (value_pixels / total_pixels) * 100
-        if percentage_hp > 0:
+        if percentage_hp > 0.5:
             # Append the percentage HP to the list
             if max_row - min_row > lims[res][0]:
                 if first_flag:
                     raise("Turning image")
                 else:
+                    # Min_row is the top of the health bar (taken from im_rgb in the region, not im_binary)
+                    min_row = min_row + np.where(health_bar_region != 0)[0].min()
                     max_row = min_row + lims[res][0]
                     print("Resizing row")
             if max_col - min_col > lims[res][1]:
                 if first_flag:
                     raise("Turning image")
                 else:
+                    min_col = min_col + np.where(health_bar_region != 0)[1].min()
                     max_col = min_col + lims[res][1]
                     print("Resizing col")
             health_bar_region = im_rgb[min_row+padding:max_row-padding, min_col+padding:max_col-padding]
@@ -65,8 +68,8 @@ def getBars(im, colours, res, first_flag = True):
             total_pixels = np.prod(health_bar_region.shape[:2])
             value_pixels = np.sum(health_bar_region.sum(axis=-1) > 0)  # Counting non-zero pixels
             percentage_hp = (value_pixels / total_pixels) * 100
-            
-            health_percentages.append(percentage_hp)
+            if percentage_hp > 1:
+                health_percentages.append(percentage_hp)
 
 
     # Print the percentage HP for each health bar
@@ -178,9 +181,10 @@ def findClusters2(im, M = 30, min_samples = 1):
     # Find centroids of clusters
     centroids = []
     for label in np.unique(labels):
-        cluster_coords = white_pixel_coords[labels == label]
-        centroid = cluster_coords.mean(axis=0)
-        centroids.append(centroid)
+        if label != -1:
+            cluster_coords = white_pixel_coords[labels == label]
+            centroid = cluster_coords.mean(axis=0)
+            centroids.append(centroid)
 
     centroids = np.array(centroids)
 
