@@ -15,6 +15,93 @@ import cv2
 from skimage.measure import label, regionprops
 import replay_utils as RU
 
+
+
+# Akali: akali_r.png and akali_r2.png
+# Ambessa: icon_ambessa_r.domina.png
+# Annie: annie_r1.png
+# Aphelios: apheliosr.png
+# Aurelionsol: aurelionsolr.png or aurelionsolr1.png or aurelionsolr2.png
+# Aurora: aurorar.png
+# Belveth: belvethr.png
+# Blitzcrank: blitzcrankr.png
+# Brand: brandr.png
+# Briar: briarr.png
+# Caitlyn: caitlynr.png
+# Chogath: greenterror_feast.png
+# Corki: corki_missilebarrage.png or corki_r_bigone.png
+# Darius: darius_icon_sudden_death.png
+# Diana: diana_r_moonfall.png
+# Draven: draven_whirlingdeath.png
+# Elise: eliser.png
+# Fiddlesticks: fiddlesticksr.png
+# Gnar: gnarbig_r.png or gnar_r_grey.png
+# Gragas: gragasexplosivecask.png
+# Graves: graveshighnoon.png
+# Gwen: gwen_r.png or gwen_r2.png or gwen_r3.png
+# Hecarim: hecarim_onslaughtofshadows.png
+# Hwei: hweir.png
+# Janna: jannar.png
+# Jarvan IV: jarvanivr.png
+# Jax: jaxr.png
+# Jayce: jaycer_melee.png or jaycer_r.png
+# Ksante: icons_ksante_r1.png
+# Kayn: kayn_r1_disabled.png or kayn_r1_primary.png
+# Kogmaw: kogmaw_livingartillery.png
+# Leblanc: leblancr.png or leblancre.png or leblancrq.png or leblancrr.png or leblancrw.png 
+# Leesin: leesinr.png
+# Leona: leonar.png
+# Lillia: lillia_icon_r.png
+# Lulu: lulu_giantgrowth.png
+# Lux: luxfinalfunkeln.png
+# Mordeksaier: mordekaiserr.png
+# Morgana: fallenangel_purgatory.png
+# Naafiri: icons_naafiri_r.png
+# Nami: namir.png
+# Nautilus: nautilus_grandline.png
+# Nidalee: nidalee_r1.png nidalee_r2.png
+# Nilah: nilahr.png
+# Nocturne: nocturne_paranoia.png
+# Olaf: olafr.png
+# Orianna: oriannar.png
+# Ornn: ornnr1.png
+# Pyke: pyker.png
+# Quinn: quinn_r1.png quinn_r2.png
+# Rammus: armordillo_recklesscharge.png
+# Rell: rellr.png
+# Riven: rivenbladeoftheexile.png or rivenwindscar.png
+# Samira: samirar8.png
+# Shaco: jester_hallucinogenbomb.png or jester_hallucinogenbomb_r.png
+# Shyvana: Shyvanadragonsdescent
+# Sion: sion_r1.png
+# Smolder: icons_smolder_r.png
+# Sylas: sylasr.png
+# Syndra: syndra_r1.png or syndra_r2.png
+# Tahm Kench: tahmkenchrwrapper.png
+# Talon: talonr.png
+# Twisted Fate: destiny_temp.png
+# Varus: varusr.png
+# Veigar: veigarprimordialburst.png
+# Vex: icons_vex_r01.png
+# Vi: vir.png
+# Viktor: viktor_r1.viktorvgu.png or viktor_r2.viktorvgu.png
+# Vladimir: vladimirr.png
+# Volibear: volibear_icon_r.png
+# Warwick: warwickr.png
+# Wukong: monkeykingcyclone.png
+# Xayah: xayahr.png
+# Xerath: xerath_r1.png
+# Yasuo: yasuo_r_grey.png
+# Yone: yoner.png
+# Yorick: yorick_r.png or yorick_r2.png
+# Yuumi: yuumir.png
+# Zac: zacr.png
+# Zed: zedr.png
+# Zeri: zerir.png
+# Ziggs: ziggsr.png
+# Zyra: zyrar.png
+
+
 # def checkEnableApi(config_path = "RA_config.txt"):
 #     if not os.path.exists(config_path):
 #         try: 
@@ -190,17 +277,18 @@ im_red_fountain = {'x': 687, 'z': 54}
 # top_position['cameraPosition'] = {}
 # for key in blue_fountain:
     # top_position['cameraPosition'][key] = (red_fountain[key]-blue_fountain[key])/2-blue_fountain
-replay_id = "7231022351"
-RU.openReplay(replay_id, port, authorization_header)
-# sleep(3)
-# is_replay_loading()
-# while(is_replay_loading(port, auth de orization_header)):
-#     sleep(5)
+replay_id = "7278984436"
+# RU.openReplay(replay_id, port, authorization_header)
+# sleep(5)
+# RU.is_replay_loading()
+# while RU.is_replay_loading():
+    # sleep(5)
 print("The replay has loaded!")
 
 # z is up/down, with higher z being lower
 # x
 time = RU.getDirector('playback').json()['time']
+
 # time = 546.41
 # lane_dict = RU.allLaneStats(time = time, zoom_factor = 3400, delay = 1.8+2.5, res = '2560')
 # cameraData = {
@@ -282,16 +370,22 @@ time = RU.getDirector('playback').json()['time']
 ## ------------------------------------------- ## 
     
 RU.editDirector('render', {'interfaceAll': True})
-champ_list = ['Penetrasion','Yoiyrtor','aminatoooo','Hagalund','Mel2']
-champ_dict = RU.getChampStatus(champ_list, res = '2560')
+# champ_list = ['beboy1','Vinxen','Disease','SHOWMAKEUR','Nivess']
+# champ_dict = RU.getChampStatus(champ_list, res = '2560')
 # champ_pos = RU.getChampPos(champ_list)
-_, HUD_scale = RU.getHUDScale('Penetrasion', "Fiora", res = '2560')
+_, HUD_scale = RU.getHUDScale('Penetrasion', "Shyvana", res = '2560')
 print(HUD_scale)
-cds = RU.getSummonerSpellCD(champ_list, res = '2560', HUD = HUD_scale)
-recall = RU.getRecall('Dmonnantim', res = '2560', HUD = HUD_scale)
+# ult_cds = RU.getUltCD(['Penetrasion','T1 Theshy', 'YungSocrates','MTH La Cocacolas', 'BrainDysfunction', 'Samuka', 'Arca'],
+#                       ['Shyvana','DrMundo','Poppy','Millio','Nami','Ekko','Xerath'],
+#                       res = '2560', HUD = HUD_scale)
+champ_list = ["Sigma Boy","Penetrasion","Palerek","SPARTAN Connor","NEORIGINS","Atanozz"]
+summ_names = {"Sigma Boy":["SummonerHaste","SummonerDot"],"Penetrasion":["SummonerFlash","SummonerHaste"],"Palerek":["SummonerFlash","SummonerDot"],"SPARTAN Connor":["SummonerFlash","SummonerBarrier"],"NEORIGINS":["SummonerBarrier","SummonerFlash"],"Atanozz":["SummonerFlash","SummonerHaste"]}
+summ_cds = RU.getSummonerSpellCD(champ_list, summ_names, res = '2560', HUD = HUD_scale)
+# recall = RU.getRecall('Dmonnantim', res = '2560', HUD = HUD_scale)
 # print(cds)
 plt.show()
 pass
+
 
 #In 1k, the mapping from HUD to screen coordinates is:
 # y = 99*HUD + b

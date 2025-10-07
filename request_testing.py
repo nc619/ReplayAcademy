@@ -40,7 +40,7 @@ def create_grid(rows):
         cell_values = [cell.get_text(strip=True) for cell in cells]
         grid.append(cell_values)
     grid_array = np.array(grid)
-    out_grid = np.full((np.array(grid_array[1:,-1],dtype=int).max()+1,np.array(grid_array[1:,0],dtype=int).max()+1),' ')
+    out_grid = np.full((np.array(grid_array[1:,-1],dtype=int).max()+1,np.array(grid_array[1:,0],dtype=int).ma x()+1),' ')
     for i in range(1,grid_array.shape[0]):
         c_i = int(grid_array[i,0])
         r_i = out_grid.shape[0]-1-int(grid_array[i,-1])
